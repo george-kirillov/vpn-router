@@ -1,0 +1,100 @@
+---
+- block:
+
+  - name: DROP invalid traffik
+    iptables:
+      chain: "{{ item }}"
+      ctstate: INVALID
+      jump: DROP
+    loop:
+      - INPUT
+      - OUTPUT
+      - FORWARD
+    notify: save iptables rules
+
+  - name: Allow INPUT all for lo
+    iptables:
+      chain:  INPUT
+      in_interface: lo
+      jump: ACCEPT
+    notify: save iptables rules
+
+  - name: Allow OUTPUT all for lo
+    iptables:
+      chain: OUTPUT
+      out_interface: lo
+      jump: ACCEPT
+    notify: save iptables rules
+
+  - name: Allow icmp
+    iptables:
+      chain: "{{ item }}"
+      protocol: icmp
+      icmp_type: any
+      jump: ACCEPT
+    loop:
+      - INPUT
+      - OUTPUT
+      - FORWARD
+    notify: save iptables rules
+
+  - name: Allow related and established connections
+    iptables:
+      chain: "{{ item }}"
+      ctstate: ESTABLISHED,RELATED
+      jump: ACCEPT
+    loop:
+      - INPUT
+      - OUTPUT
+      - FORWARD
+    notify: save iptables rules
+
+  - name: Allow all connections from local addresses not from the external interface.
+    iptables:
+      chain: INPUT
+      in_interface: '!{{ ansible_default_ipv4.interface }}'
+      source: "{{ item }}"
+      jump: ACCEPT
+    loop:
+      - 192.168.0.0/16
+      - 10.0.0.0/8
+      - 172.31.0.0/16
+    notify: save iptables rules
+    when: ansible_default_ipv4.network | ipaddr('public')
+
+  - name: Allow incoming SSH.
+    iptables:
+      chain: INPUT
+      protocol: tcp
+      destination_port: '22'
+      ctstate: NEW
+      syn: match
+      jump: ACCEPT
+    notify: save iptables rules
+    when: ansible_default_ipv4.network | ipaddr('public')    
+
+  - name: DROP all incoming.
+    iptables:
+      chain: INPUT
+      jump: DROP
+    notify: save iptables rules
+    when: ansible_default_ipv4.network | ipaddr('public')    
+
+  - name: Allow all OUTPUT on all interfaces.
+    iptables:
+      chain: OUTPUT  
+      jump: ACCEPT    
+    notify: save iptables rules
+
+  - name: SNAT for local network
+    iptables:
+      table: nat
+      chain: POSTROUTING
+      out_interface: "{{ ansible_default_ipv4.interface }}"
+      source: "{{ local_network }}/{{ (local_address + '/' + local_netmask) | ipaddr('prefix') }}"
+      to_source: "{{ ansible_default_ipv4.address }}"
+      jump: SNAT
+    notify: save iptables rules
+    when: ansible_default_ipv4.network | ipaddr('public')
+  become: true
+...

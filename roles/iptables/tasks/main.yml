@@ -1,0 +1,10 @@
+---
+- import_tasks: dependency.yml
+  tags: prepare
+
+- import_tasks: set_fact.yml
+  tags: prepare
+
+- import_tasks: iptables.yml
+  tags: iptables
+...

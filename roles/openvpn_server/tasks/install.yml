@@ -1,0 +1,23 @@
+---
+- name: Add OpenVPN repo GPG key
+  apt_key:
+    id: E158C569
+    url: https://swupdate.openvpn.net/repos/repo-public.gpg
+  become: true  
+
+- name: Add OpenVPN repo sources
+  apt_repository:
+    filename: openvpn
+    repo: 'deb http://build.openvpn.net/debian/openvpn/{{ openvpn_version }} {{ ansible_distribution_release }} main'
+  become: true             
+
+- name: Install Packages 
+  apt:
+    name: "{{ openvpn_dependency_packages }}"
+  register: apt_result
+  until: apt_result is not failed
+  retries: 5
+  delay: 15
+  ignore_errors: yes
+  become: true
+...

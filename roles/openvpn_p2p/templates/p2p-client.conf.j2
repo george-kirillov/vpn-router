@@ -1,0 +1,46 @@
+# Работаем в режиме точка-точка по протоколу UDP
+mode p2p
+proto {{ openvpn_p2p_proto }}
+
+# Подключение к серверу
+remote {{ item_pair.split('_')[0] }}.{{ domain_name }} {{ openvpn_p2p_port }}
+
+# Настройки туннельного интерфейса
+dev tun_s_{{ item_pair.split('_')[0] }}
+ifconfig 10.{{ first_octet }}.{{ second_octet }}.2 10.{{ first_octet }}.{{ second_octet }}.1  
+
+# Параметры подключения
+nobind
+resolv-retry infinite
+persist-key
+persist-tun
+compress lz4-v2
+
+# Системные параметры
+user nobody
+group nogroup
+status /var/log/openvpn/{{ item_pair }}-status.log
+log /var/log/openvpn/{{ item_pair }}.log
+verb 3
+
+# Проверка связи с перезапуском
+keepalive 3 15
+
+# Шифрование (в режиме клиента)
+tls-client
+ca [inline]
+cert [inline]
+key [inline]
+tls-auth [inline] 1
+<ca>
+{{ openvpn_p2p_ca.stdout }}
+</ca>
+<cert>
+{{ openvpn_p2p_client_cert.stdout }}
+</cert>
+<key>
+{{ openvpn_p2p_client_key.stdout }}
+</key>
+<tls-auth>
+{{ openvpn_p2p_tls_auth.stdout }}
+</tls-auth>

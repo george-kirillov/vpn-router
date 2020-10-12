@@ -1,0 +1,17 @@
+---
+all:
+  hosts:
+  children:
+    test_stand:
+      children:
+        routers:
+          hosts:
+            router1:            
+              ansible_python_interpreter: /usr/bin/python3
+            router2:
+              ansible_python_interpreter: /usr/bin/python3
+            router3:            
+              ansible_python_interpreter: /usr/bin/python3
+            router4:
+              ansible_python_interpreter: /usr/bin/python3              
+...

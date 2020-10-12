@@ -1,0 +1,23 @@
+hostname {{ inventory_hostname_short }}
+password {{ zebra_password }}
+{% if zebra_logging is defined and zebra_logging|length and zebra_logging == 'file' and quagga_logs_dir is defined and quagga_logs_dir|length and zebra_log_file is defined and zebra_log_file|length and zebra_log_level is defined and zebra_log_level|length%}
+log {{ zebra_logging }} {{ quagga_logs_dir }}/{{ zebra_log_file }} {{ zebra_log_level }}
+{%- endif %}
+
+interface {{ ansible_default_ipv4.interface }}
+ description public inteface
+
+interface {{ local_interface }}
+ description local inteface
+
+{% for tun in ovpn_p2p_interfaces %} 
+interface {{ tun }}
+ description p2p tunnel interface
+{%- endfor %}
+
+{% for bridge in bridge_interfaces %} 
+interface {{ bridge }}
+ description bridge for ovpn tap interface 
+{%- endfor %}
+
+ip forwarding

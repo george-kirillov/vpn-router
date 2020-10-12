@@ -1,0 +1,55 @@
+port {{ openvpn_port | default('443', true) }}
+proto {{ openvpn_proto | default('udp', true) }}
+dev {{ openvpn_dev  | default('tap', true)  }}
+server-bridge {{ vlan_interface_ip }} {{ vlan_interface_netmask }} {{ openvpn_clients_address_pool }}
+keepalive 10 120
+{{ openvpn_comp | default('comp-lzo', true) }}
+persist-key
+persist-tun
+user nobody
+group nogroup
+status /var/log/openvpn/{{ openvpn_dev  | default('tap', true)  }}.log
+log-append /var/log/openvpn/{{ openvpn_dev  | default('tap', true)  }}.log
+verb {{ openvpn_verb | default('2', true) }}
+
+
+##
+# Маршруты
+## self local networks
+{% for local_address in local_addresses %} 
+push "route {{ local_address | ipaddr('network') }} {{ local_address | ipaddr('netmask') }}"
+{%- endfor %}
+
+## neighbors local networks
+{% for neighbors_local_address in neighbors_local_addresses %} 
+push "route {{ neighbors_local_address | ipaddr('network') | join(" ") }} {{ neighbors_local_address | ipaddr('netmask') | join(" ")}}"
+{%- endfor %}
+
+# Уровень безопасности. Как минимум нужна возможность запускать скрипты при старте
+script-security 2
+up /etc/openvpn/server_up.sh
+down /etc/openvpn/server_down.sh
+
+# Сертификаты и ключи
+tls-server
+cipher {{ openvpn_cipher | default('AES-256-CBC', true) }}
+ca [inline]
+cert [inline]
+key [inline]
+dh [inline]
+tls-auth [inline] 0
+<ca>
+{{ openvpn_ca }}
+</ca>
+<cert>
+{{ openvpn_server_cert }}
+</cert>
+<key>
+{{ openvpn_server_key }}
+</key>
+<dh>
+{{ openvpn_server_dh }}
+</dh>
+<tls-auth>
+{{ openvpn_tls_auth }}
+</tls-auth>

@@ -1,0 +1,19 @@
+---
+- import_tasks: set_fact.yml
+  tags: prepare
+
+- import_tasks: sysctl.yml
+  tags: prepare
+
+- import_tasks: install.yml
+  tags: prepare
+
+- import_tasks: get_certs.yml
+  tags: get_certs
+
+- include_tasks: setup.yml
+  loop: "{{ vpn_pair_list }}"
+  loop_control:
+      loop_var: item_pair  
+  tags: setup
+...

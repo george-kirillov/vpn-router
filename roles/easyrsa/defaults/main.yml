@@ -1,0 +1,13 @@
+---
+easyrsa_dest: "/tmp/easy-rsa"
+easyrsa_dn: "cn_only"
+easyrsa_req_country: "RUS"
+easyrsa_req_province: "SPB"
+easyrsa_req_city: "Saint Petersburg"
+easyrsa_req_org: "xxx"
+easyrsa_req_email: "admin@xxx.ru"
+easyrsa_req_ou: "Operation"
+easyrsa_keysize: 2048
+easyrsa_digest: "sha256"
+easyrsa_clients: ""  
+...

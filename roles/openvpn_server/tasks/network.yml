@@ -1,0 +1,19 @@
+---
+- name: disable cloud-init's network configuration
+  copy:
+    dest: /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
+    content: |
+      network: {config: disabled}
+  become: true
+
+- name: Generate new network config
+  template:
+    src: interfaces.cfg.j2
+    dest: /etc/network/interfaces.d/50-cloud-init.cfg
+  when: |
+    vlan_id is defined and vlan_id
+    and
+    ansible_default_ipv4.address | ipaddr('public')   
+  become: true
+  notify: restart network
+...

@@ -1,0 +1,38 @@
+---
+- name: Template openvpn config
+  template:
+    src: '{{ openvpn_connect_name }}.conf.j2'
+    dest: '/etc/openvpn/server/{{ openvpn_connect_name }}.conf'
+  become: true
+  notify: restart openvpn
+
+- name: Template openvpn scripts
+  template:
+    src: '{{ item }}.j2'
+    dest: '/etc/openvpn/{{ item }}'
+    mode: '0700'
+  loop:
+    - server_up.sh
+    - server_down.sh
+  become: true
+  notify: restart openvpn
+
+- name: Extract easy-rsa
+  unarchive:
+    src: easy-rsa.tar.gz
+    dest: /etc/openvpn/
+  become: true
+
+- name: copy client gen script & config
+  copy:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+    owner: root
+    group: root
+    mode: '{{ item.mode }}'
+  become: true
+  loop:
+   - { src: template_client_config, dest: /etc/openvpn/easy-rsa/, mode: '0644' }
+   - { src: scripts/openvpn_gen_new_user.sh, dest: /usr/local/bin/, mode: '0775'}
+  tags: key_gen_script
+...

@@ -1,0 +1,76 @@
+---
+- name: Install dependencies
+  apt:
+    name: "git"
+    state: present
+  become: true
+
+- name: Download easy-rsa from GitHub
+  git:
+    repo: "https://github.com/OpenVPN/easy-rsa.git"
+    dest: "{{ easyrsa_dest }}"
+  become: true    
+
+- name: Configure easy-rsa
+  template:
+    src: vars.j2
+    dest: "{{ easyrsa_dest }}/easyrsa3/vars"
+  become: true    
+
+- name: Initialize pki
+  command: ./easyrsa init-pki
+  args:
+    chdir: "{{ easyrsa_dest }}/easyrsa3"
+    creates: "{{ easyrsa_dest }}/easyrsa3/pki"
+  become: true    
+
+- name: Build CA keys
+  command: ./easyrsa build-ca nopass
+  args:
+    chdir: "{{ easyrsa_dest }}/easyrsa3"
+    creates: "{{ easyrsa_dest }}/easyrsa3/pki/private/ca.key"
+  become: true    
+
+- name: Generate the Diffie-Hellman key
+  command: ./easyrsa gen-dh
+  args:
+    chdir: "{{ easyrsa_dest }}/easyrsa3"
+    creates: "{{ easyrsa_dest }}/easyrsa3/pki/dh.pem"
+  become: true    
+
+- name: Generate the server key pair
+  command: ./easyrsa --req-cn=server gen-req server nopass
+  args:
+    chdir: "{{ easyrsa_dest }}/easyrsa3"
+    creates: "{{ easyrsa_dest }}/easyrsa3/pki/private/server.key"
+  become: true    
+
+- name: Sign the server cert 
+  command: ./easyrsa sign-req server server
+  args:
+    chdir: "{{ easyrsa_dest }}/easyrsa3"
+    creates: "{{ easyrsa_dest }}/easyrsa3/issued/server.crt"
+  become: true
+
+- name: Generate the client key pair
+  command: ./easyrsa --req-cn={{ item_easyrsa }} gen-req {{ item_easyrsa }} nopass
+  args:
+    chdir: "{{ easyrsa_dest }}/easyrsa3"
+    creates: "{{ easyrsa_dest }}/easyrsa3/pki/private/{{ item_easyrsa }}.key"
+  loop: "{{ easyrsa_clients }}"
+  loop_control:
+      loop_var: item_easyrsa      
+  when: easyrsa_clients is defined and easyrsa_clients
+  become: true  
+
+- name: Sign the client cert
+  command: ./easyrsa sign-req client {{ item_easyrsa }}
+  args:
+    chdir: "{{ easyrsa_dest }}/easyrsa3"
+    creates: "{{ easyrsa_dest }}/easyrsa3/issued/{{ item_easyrsa }}.crt"    
+  loop: "{{ easyrsa_clients }}"
+  loop_control:
+      loop_var: item_easyrsa   
+  when: easyrsa_clients is defined and easyrsa_clients
+  become: true  
+...

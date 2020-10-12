@@ -1,0 +1,19 @@
+---
+- import_tasks: sysctl.yml
+  tags: prepare
+
+- import_tasks: install.yml
+  tags: prepare
+
+- import_tasks: set_fact.yml
+  tags: prepare
+
+- import_tasks: network.yml
+  tags: network
+
+- import_tasks: iptables.yml
+  tags: iptables
+
+- import_tasks: openvpn_tap.yml
+  tags: openvpn_tap
+...

@@ -1,0 +1,10 @@
+---
+- name: Allow incoming tap-bridge openvpn.
+  iptables:
+    chain: INPUT
+    protocol: "{{ openvpn_proto | default('udp', true) }}"
+    destination_port: "{{ openvpn_port | default('443', true)}}"
+    jump: ACCEPT
+  notify: save iptables rules
+  become: true
+...

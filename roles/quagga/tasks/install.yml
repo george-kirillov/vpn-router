@@ -1,0 +1,11 @@
+---
+- name: Install quagga package
+  apt:
+    name: quagga
+  register: apt_result
+  until: apt_result is not failed
+  retries: 5
+  delay: 15
+  ignore_errors: yes
+  become: true
+...

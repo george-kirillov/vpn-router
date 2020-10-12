@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Переводим интерфейс в состояние «up»
+/sbin/ip link set {{ tap_interface | default('tap0', true) }} up
+# Добавляем в Bridge
+/sbin/brctl addif {{ br_interface | default('br0', true) }} {{ tap_interface | default('tap0', true) }}

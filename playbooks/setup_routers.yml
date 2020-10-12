@@ -1,0 +1,27 @@
+---
+- hosts: routers
+  tasks:
+
+    - name: Make mesh network p2p
+      import_role:
+        name: openvpn_p2p
+      tags: p2p
+
+    - name: Make openvpn access point
+      import_role:
+        name: openvpn_server
+      tags: openvpn
+
+    - name: We need force run handlers before setup quagga 
+      meta: flush_handlers
+
+    - name: Make dinamic ip routing 
+      import_role:
+        name: quagga
+      tags: quagga
+
+    - name: Make fireWall
+      import_role:
+        name: iptables
+      tags: iptables
+...

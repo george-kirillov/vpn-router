@@ -1,0 +1,18 @@
+---
+- name: restart network
+  systemd:
+    name: networking
+    state: restarted
+  become: true
+
+- name: restart openvpn
+  systemd:
+    name: openvpn-server@{{ openvpn_connect_name }}
+    enabled: yes
+    state: restarted
+  become: true
+
+- name: save iptables rules
+  shell: netfilter-persistent save
+  become: true
+...

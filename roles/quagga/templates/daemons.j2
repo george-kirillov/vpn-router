@@ -1,0 +1,4 @@
+{% for daemon, enabled in quagga_daemons.items() %}
+{{ daemon }}={% if enabled %}yes{% else %}no{% endif %}
+
+{% endfor %}

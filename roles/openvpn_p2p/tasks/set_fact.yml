@@ -1,0 +1,7 @@
+---    
+- name: Get vpn pair (server-client) 
+  set_fact:
+    vpn_pair_list:  "{{ vpn_pair_list|default([]) + [ inventory_hostname_short + '_' + item.split('.')[0] ] }}"
+  loop: "{{ groups['routers'] }}"
+  when: inventory_hostname_short != item.split('.')[0]
+...

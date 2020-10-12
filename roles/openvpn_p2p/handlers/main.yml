@@ -1,0 +1,21 @@
+---
+- name: restart openvpn server
+  systemd:
+    name: 'openvpn-server@{{ item }}'
+    enabled: yes
+    state: restarted
+  loop: "{{ vpn_pair_list }}"
+  become: true
+
+- name: restart openvpn client
+  systemd:
+    name: "openvpn-client@{{ item.split('_')[1] }}_{{ item.split('_')[0] }}"
+    enabled: yes
+    state: restarted
+  loop: "{{ vpn_pair_list }}"
+  become: true
+
+- name: save iptables rules
+  shell: netfilter-persistent save
+  become: true
+...

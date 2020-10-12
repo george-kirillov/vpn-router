@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Переводим интерфейс в состояние «down»
+/sbin/ip link set {{ tap_interface | default('tap0', true) }} down
+# Удаляем из Bridge
+/sbin/brctl delif {{ br_interface | default('br0', true) }} {{ tap_interface | default('tap0', true) }}

@@ -1,0 +1,63 @@
+---
+- name: Refresh network facts 
+  setup:
+    gather_subset: network
+    
+- name: Get local interface
+  set_fact:
+    local_interface:  "{{ hostvars[inventory_hostname]['ansible_' + item ]['device'] }}"
+  loop: "{{ ansible_interfaces }}"
+  when: |
+   hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] is defined
+   and
+   hostvars[inventory_hostname]['ansible_' + item ]['type'] == 'ether'
+   and
+   hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] != ansible_default_ipv4.address
+
+- name: Get local address
+  set_fact:
+    local_address:  "{{ hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] }}"
+  loop: "{{ ansible_interfaces }}"
+  when: |
+   hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] is defined
+   and
+   hostvars[inventory_hostname]['ansible_' + item ]['type'] == 'ether'
+   and
+   hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] != ansible_default_ipv4.address
+
+- name: get local netmask
+  set_fact:
+    local_netmask:  "{{ hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['netmask'] }}"
+  loop: "{{ ansible_interfaces }}"
+  when: |
+   hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] is defined
+   and
+   hostvars[inventory_hostname]['ansible_' + item ]['type'] == 'ether'
+   and
+   hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] != ansible_default_ipv4.address
+
+- name: Get local network
+  set_fact:
+    local_network:  "{{ hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['network'] }}"
+  loop: "{{ ansible_interfaces }}"
+  when: |
+   hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] is defined
+   and
+   hostvars[inventory_hostname]['ansible_' + item ]['type'] == 'ether'
+   and
+   hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] != ansible_default_ipv4.address
+
+- name: Get ovpn p2p interfaces
+  set_fact:
+    ovpn_p2p_interfaces:  "{{ ovpn_p2p_interfaces|default([]) + [hostvars[inventory_hostname]['ansible_' + item ]['device']] }}"
+  loop: "{{ ansible_interfaces }}"
+  when: |
+   hostvars[inventory_hostname]['ansible_' + item ]['type'] == 'tunnel'
+
+- name: Get bridge interfaces 
+  set_fact:
+    bridge_interfaces:  "{{ bridge_interfaces|default([]) + [hostvars[inventory_hostname]['ansible_' + item ]['device']] }}"
+  loop: "{{ ansible_interfaces }}"
+  when: |
+   hostvars[inventory_hostname]['ansible_' + item ]['type'] == 'bridge'
+...

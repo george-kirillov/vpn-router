@@ -1,0 +1,46 @@
+---
+- name: get local interface
+  set_fact:
+    local_interface:  "{{ hostvars[inventory_hostname]['ansible_' + item ]['device'] }}"
+  loop: "{{ ansible_interfaces }}"
+  when: |
+   hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] is defined
+   and
+   hostvars[inventory_hostname]['ansible_' + item ]['type'] == 'ether'
+   and
+   hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] != ansible_default_ipv4.address
+
+- name: get local address
+  set_fact:
+    local_address:  "{{ hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] }}"
+  loop: "{{ ansible_interfaces }}"
+  when: |
+   hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] is defined
+   and
+   hostvars[inventory_hostname]['ansible_' + item ]['type'] == 'ether'
+   and
+   hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] != ansible_default_ipv4.address
+
+- name: get local netmask
+  set_fact:
+    local_netmask:  "{{ hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['netmask'] }}"
+  loop: "{{ ansible_interfaces }}"
+  when: |
+   hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] is defined
+   and
+   hostvars[inventory_hostname]['ansible_' + item ]['type'] == 'ether'
+   and
+   hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] != ansible_default_ipv4.address
+
+- name: get local network
+  set_fact:
+    local_network:  "{{ hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['network'] }}"
+  loop: "{{ ansible_interfaces }}"
+  when: |
+   hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] is defined
+   and
+   hostvars[inventory_hostname]['ansible_' + item ]['type'] == 'ether'
+   and
+   hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] != ansible_default_ipv4.address
+
+...

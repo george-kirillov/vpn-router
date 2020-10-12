@@ -1,0 +1,23 @@
+---
+quagga_daemons:
+  bgpd: false
+  isisd: false
+  ldpd: false
+  nhrpd: false
+  ospf6d: false
+  ospfd: true
+  pimd: false
+  ripd: false
+  ripngd: false
+  zebra: true
+
+zebra_password: "Qwerty123$"
+zebra_logging: file
+zebra_log_file: zebra.log
+zebra_log_level: errors
+quagga_logs_dir: /var/log/quagga
+ospfd_password: "Qwerty123$"
+ospfd_logging: file
+ospfd_log_file: ospfd.log
+ospfd_log_level: errors
+...

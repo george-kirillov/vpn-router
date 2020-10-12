@@ -1,0 +1,30 @@
+auto lo
+iface lo inet loopback
+    dns-nameservers {% for dns in ansible_dns.nameservers if dns !='127.0.0.53' %}{{ dns }} {% endfor%}
+
+auto {{ ansible_default_ipv4.interface }}
+iface {{ ansible_default_ipv4.interface }} inet static
+    address {{ ansible_default_ipv4.address }}/{{ ansible_default_ipv4.netmask | ipaddr('prefix') }}
+    gateway {{ ansible_default_ipv4.gateway }}
+    mtu 1500
+{% for local_interface in local_interfaces %} 
+auto {{ local_interface }}
+iface {{ local_interface }} inet static
+{% for local_address in local_addresses %}
+address {{ local_address | ipaddr('host/prefix') }}
+mtu 1500
+{%- endfor %}
+{%- endfor %}
+
+{% for local_interface in local_interfaces %} 
+auto {{ local_interface }}.{{ vlan_id }}
+iface {{ local_interface }}.{{ vlan_id }} inet manual
+{%- endfor %}
+
+auto {{ br_interface | default('br0', true) }}
+iface {{ br_interface | default('br0', true) }} inet static
+    address {{ vlan_interface_ip }}/24
+{% for local_interface in local_interfaces %} 
+    bridge_ports {{ local_interface }}.{{ vlan_id }}
+    bridge_fd 0
+{%- endfor %}

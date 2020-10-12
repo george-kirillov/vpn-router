@@ -1,0 +1,50 @@
+---
+- name: Create dir for quagga logs
+  file: 
+    path: "{{ quagga_logs_dir }}"
+    owner: quagga
+    group: quagga    
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Configuring daemons
+  template:    
+    src: daemons.j2
+    dest: /etc/quagga/daemons
+    owner: quagga
+    group: quagga
+    mode: '0644'
+  become: true
+  notify: restart zebra
+
+- name: Configuring zebra.conf
+  template:    
+    src: zebra.conf.j2
+    dest: /etc/quagga/zebra.conf
+    owner: quagga
+    group: quagga
+    mode: '0640'
+  become: true  
+  notify: restart zebra
+  when: 
+  - quagga_daemons.zebra is defined
+  - quagga_daemons.zebra | bool
+  - bridge_interfaces is defined
+  - ovpn_p2p_interfaces is defined   
+
+- name: Configuring ospfd.conf
+  template:    
+    src: ospfd.conf.j2
+    dest: /etc/quagga/ospfd.conf
+    owner: quagga
+    group: quagga
+    mode: '0640'
+  become: true  
+  notify: restart ospfd
+  when: 
+  - quagga_daemons.ospfd is defined
+  - quagga_daemons.ospfd | bool
+  - bridge_interfaces is defined
+  - ovpn_p2p_interfaces is defined     
+... 

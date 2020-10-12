@@ -1,0 +1,126 @@
+---
+- name: Chech exists server config
+  stat:
+    path: "/etc/openvpn/server/{{ item_pair }}.conf"
+  register: server_config
+  become: true  
+
+- name: Chech exists client config
+  stat:    
+    path: "/etc/openvpn/client/{{ item_pair }}.conf"
+  register: client_config  
+  delegate_to: "{{ item_pair.split('_')[1] }}.{{ domain_name }}"
+  become: true  
+
+- name: Generate random port & random network octet
+  set_fact:
+      first_octet: "{{ 255 |random(start=170) }}"
+      second_octet: "{{ 255 |random(start=170) }}"
+      openvpn_p2p_port: "{{ 32767 |random(start=10000) }}"
+  when: | 
+         not server_config.stat.exists or
+         not client_config.stat.exists
+
+- name: Read CA file
+  command: cat "/var/{{ item_pair }}/easyrsa3/pki/ca.crt"  
+  no_log: true
+  register: openvpn_p2p_ca
+  changed_when: false
+  become: true
+  when: | 
+         not server_config.stat.exists or
+         not client_config.stat.exists  
+
+- name: Read server.crt file
+  command: cat "/var/{{ item_pair }}/easyrsa3/pki/issued/server.crt"  
+  no_log: true
+  register: openvpn_p2p_server_cert
+  changed_when: false
+  become: true
+  when: | 
+         not server_config.stat.exists or
+         not client_config.stat.exists  
+
+- name: Read client.crt file
+  command: cat "/var/{{ item_pair }}/easyrsa3/pki/issued/client.crt"  
+  no_log: true
+  register: openvpn_p2p_client_cert
+  changed_when: false
+  become: true
+  when: | 
+         not server_config.stat.exists or
+         not client_config.stat.exists   
+
+- name: Read server.key file
+  command: cat "/var/{{ item_pair }}/easyrsa3/pki/private/server.key"  
+  no_log: true
+  register: openvpn_p2p_server_key
+  changed_when: false
+  become: true
+  when: | 
+         not server_config.stat.exists or
+         not client_config.stat.exists  
+
+- name: Read client.key file
+  command: cat "/var/{{ item_pair }}/easyrsa3/pki/private/client.key"  
+  no_log: true
+  register: openvpn_p2p_client_key
+  changed_when: false
+  become: true
+  when: | 
+         not server_config.stat.exists or
+         not client_config.stat.exists  
+
+- name: Read dh.pem file
+  command: cat "/var/{{ item_pair }}/easyrsa3/pki/dh.pem"  
+  no_log: true
+  register: openvpn_p2p_server_dh
+  changed_when: false
+  become: true
+  when: | 
+         not server_config.stat.exists or
+         not client_config.stat.exists  
+
+- name: Read ta.key file
+  command: cat "/var/{{ item_pair }}/easyrsa3/pki/ta.key"  
+  no_log: true
+  register: openvpn_p2p_tls_auth
+  changed_when: false
+  become: true
+  when: | 
+         not server_config.stat.exists or
+         not client_config.stat.exists  
+
+- name: Allow incoming p2p openvpn.
+  iptables:
+    chain: INPUT
+    protocol: "{{ openvpn_p2p_proto }}"
+    destination_port: "{{ openvpn_p2p_port }}"
+    jump: ACCEPT
+  become: true      
+  notify: save iptables rules
+  when: | 
+         not server_config.stat.exists or
+         not client_config.stat.exists  
+
+- name: Template openvpn server config
+  template:
+    src: p2p-server.conf.j2
+    dest: "/etc/openvpn/server/{{ item_pair }}.conf"        
+  become: true  
+  notify: restart openvpn server
+  when: | 
+         not server_config.stat.exists or
+         not client_config.stat.exists  
+
+- name: Template openvpn client config
+  template:
+    src: p2p-client.conf.j2
+    dest: "/etc/openvpn/client/{{ item_pair }}.conf"
+  delegate_to: "{{ item_pair.split('_')[1] }}.{{ domain_name }}"
+  become: true
+  notify: restart openvpn client
+  when: | 
+         not server_config.stat.exists or
+         not client_config.stat.exists  
+...

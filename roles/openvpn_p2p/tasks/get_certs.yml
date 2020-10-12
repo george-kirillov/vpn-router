@@ -1,0 +1,19 @@
+---
+- name: Generate p2p certs
+  include_role:
+    name: easyrsa
+  vars:
+    easyrsa_dest: "/var/{{ item }}"  
+    easyrsa_clients:
+    - client
+  loop: "{{ vpn_pair_list }}"
+  tags: easyrsa
+
+- name: Generate ta.key
+  command: "openvpn --genkey --secret /var/{{ item }}/easyrsa3/pki/ta.key"
+  args:
+    creates: "/var/{{ item }}/easyrsa3/pki/ta.key"
+  loop: "{{ vpn_pair_list }}"
+  become: true
+  notify: restart openvpn server
+...

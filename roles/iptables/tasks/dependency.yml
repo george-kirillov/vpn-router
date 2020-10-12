@@ -1,0 +1,11 @@
+---
+- name: Install Packages 
+  apt:
+    name: "iptables-persistent"
+  register: apt_result
+  until: apt_result is not failed
+  retries: 5
+  delay: 10
+  ignore_errors: yes
+  become: true
+...
