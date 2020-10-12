@@ -15,6 +15,11 @@ address {{ local_address | ipaddr('host/prefix') }}
 mtu 1500
 {%- endfor %}
 {%- endfor %}
+{% if static_routes is defined and static_routes | length  %}
+{% for static_route in static_routes %} 
+up route add -net {{ static_route }}  
+{%- endfor %}
+{% endif %}
 
 {% for local_interface in local_interfaces %} 
 auto {{ local_interface }}.{{ vlan_id }}

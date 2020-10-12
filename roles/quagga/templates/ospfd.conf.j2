@@ -1,26 +1,35 @@
 hostname {{ inventory_hostname_short }}
 password {{ ospfd_password }}
-{% if ospfd_logging is defined and ospfd_logging|length and ospfd_logging == 'file' and quagga_logs_dir is defined and quagga_logs_dir|length and ospfd_log_file is defined and ospfd_log_file|length and ospfd_log_level is defined and ospfd_log_level|length%}
+{% if ospfd_logging is defined and ospfd_logging | length and ospfd_logging == 'file' and quagga_logs_dir is defined and quagga_logs_dir | length and ospfd_log_file is defined and ospfd_log_file | length and ospfd_log_level is defined and ospfd_log_level | length%}
 log {{ ospfd_logging }} {{ quagga_logs_dir }}/{{ ospfd_log_file }} {{ ospfd_log_level }}
 {% endif %}
 
+{% for local_interface in local_interfaces | unique %}
 interface {{ local_interface }}
  ip ospf area 2
+{%- endfor %}
 
-{% for tun in ovpn_p2p_interfaces %} 
-interface {{ tun }}
+{% for ovpn_p2p_interface in ovpn_p2p_interfaces %} 
+interface {{ ovpn_p2p_interface }}
  ip ospf area 0
 {%- endfor %}  
 
-{% for bridge in bridge_interfaces %} 
-interface {{ bridge }}
+{% for bridge_interface in bridge_interfaces %} 
+interface {{ bridge_interface }}
  ip ospf area 2
 {%- endfor %}
 
 router ospf
- ospf router-id {{ local_address }}
+ redistribute kernel
+{% for local_address in local_addresses | unique %}
+ ospf router-id {{ local_address | ipaddr('address') }}
+{%- endfor %} 
+{% if ansible_default_ipv4.address | ipaddr('public')  %}
  passive-interface {{ ansible_default_ipv4.interface }}
+{% endif %}
+{% for local_interface in local_interfaces | unique %}
  passive-interface {{ local_interface }}
-{% for bridge in bridge_interfaces %} 
- passive-interface {{ bridge }}
+{%- endfor %}
+{% for bridge_interface in bridge_interfaces %} 
+ passive-interface {{ bridge_interface }}
 {%- endfor %}

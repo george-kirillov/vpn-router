@@ -10,13 +10,13 @@ all:
       children:
         routers:
           hosts:
-            router1:
+            router1.soft-machine.tech:
               ansible_python_interpreter: /usr/bin/python3
-            router2:
+            router2.soft-machine.tech:
               ansible_python_interpreter: /usr/bin/python3
-            router3:
+            router3.soft-machine.tech:
               ansible_python_interpreter: /usr/bin/python3
-            router4:
+            router4.soft-machine.tech:
               ansible_python_interpreter: /usr/bin/python3
 ```
 

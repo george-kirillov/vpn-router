@@ -4,20 +4,23 @@ password {{ zebra_password }}
 log {{ zebra_logging }} {{ quagga_logs_dir }}/{{ zebra_log_file }} {{ zebra_log_level }}
 {%- endif %}
 
+{% if ansible_default_ipv4.address| ipaddr('public') %}
 interface {{ ansible_default_ipv4.interface }}
  description public inteface
+{% endif %}
 
+{% for local_interface in local_interfaces %}
 interface {{ local_interface }}
  description local inteface
+{%- endfor %}
 
-{% for tun in ovpn_p2p_interfaces %} 
-interface {{ tun }}
+{% for ovpn_p2p_interface in ovpn_p2p_interfaces %} 
+interface {{ ovpn_p2p_interface }}
  description p2p tunnel interface
 {%- endfor %}
 
-{% for bridge in bridge_interfaces %} 
-interface {{ bridge }}
+{% for bridge_interface in bridge_interfaces %} 
+interface {{ bridge_interface }}
  description bridge for ovpn tap interface 
 {%- endfor %}
-
 ip forwarding

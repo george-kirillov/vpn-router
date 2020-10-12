@@ -12,16 +12,21 @@ status /var/log/openvpn/{{ openvpn_dev  | default('tap', true)  }}.log
 log-append /var/log/openvpn/{{ openvpn_dev  | default('tap', true)  }}.log
 verb {{ openvpn_verb | default('2', true) }}
 
-
-##
 # Маршруты
 ## self local networks
-{% for local_address in local_addresses %} 
+{% for local_address in local_addresses -%} 
 push "route {{ local_address | ipaddr('network') }} {{ local_address | ipaddr('netmask') }}"
 {%- endfor %}
 
+{% if static_routes is defined and static_routes | length -%}
+## static routes
+{%- for static_route in static_routes %} 
+push "route {{ static_route.split('gw')[0] | ipaddr('network') }} {{static_route.split('gw')[0] | ipaddr('netmask') }}"  
+{%- endfor %}
+{% endif %}
+
 ## neighbors local networks
-{% for neighbors_local_address in neighbors_local_addresses %} 
+{%- for neighbors_local_address in neighbors_local_addresses %} 
 push "route {{ neighbors_local_address | ipaddr('network') | join(" ") }} {{ neighbors_local_address | ipaddr('netmask') | join(" ")}}"
 {%- endfor %}
 

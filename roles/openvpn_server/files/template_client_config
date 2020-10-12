@@ -1,0 +1,14 @@
+client
+dev tap-soft-machine
+proto udp
+remote vpn.soft-machine.ru 443
+persist-key
+persist-tun
+ca ca.crt
+cert XXX.crt
+key XXX.key
+tls-auth ta.key 1
+remote-cert-tls server
+comp-lzo
+verb 2
+cipher AES-256-CBC

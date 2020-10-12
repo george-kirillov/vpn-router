@@ -3,49 +3,21 @@
   setup:
     gather_subset: network
     
-- name: Get local interface
+- name: Get local interfaces
   set_fact:
-    local_interface:  "{{ hostvars[inventory_hostname]['ansible_' + item ]['device'] }}"
+    local_interfaces:  "{{ local_interfaces|default([]) + [hostvars[inventory_hostname]['ansible_' + item ]['device']] }}"
   loop: "{{ ansible_interfaces }}"
   when: |
    hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] is defined
-   and
+    and
    hostvars[inventory_hostname]['ansible_' + item ]['type'] == 'ether'
-   and
-   hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] != ansible_default_ipv4.address
+    and
+   hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] | ipaddr('private')
 
 - name: Get local address
   set_fact:
-    local_address:  "{{ hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] }}"
-  loop: "{{ ansible_interfaces }}"
-  when: |
-   hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] is defined
-   and
-   hostvars[inventory_hostname]['ansible_' + item ]['type'] == 'ether'
-   and
-   hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] != ansible_default_ipv4.address
-
-- name: get local netmask
-  set_fact:
-    local_netmask:  "{{ hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['netmask'] }}"
-  loop: "{{ ansible_interfaces }}"
-  when: |
-   hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] is defined
-   and
-   hostvars[inventory_hostname]['ansible_' + item ]['type'] == 'ether'
-   and
-   hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] != ansible_default_ipv4.address
-
-- name: Get local network
-  set_fact:
-    local_network:  "{{ hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['network'] }}"
-  loop: "{{ ansible_interfaces }}"
-  when: |
-   hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] is defined
-   and
-   hostvars[inventory_hostname]['ansible_' + item ]['type'] == 'ether'
-   and
-   hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] != ansible_default_ipv4.address
+    local_addresses:  "{{ local_addresses|default([]) + [hostvars[inventory_hostname]['ansible_' + item]['ipv4']['address'] + '/' + hostvars[inventory_hostname]['ansible_' + item]['ipv4']['netmask']] }}"
+  loop: "{{ local_interfaces }}"
 
 - name: Get ovpn p2p interfaces
   set_fact:
