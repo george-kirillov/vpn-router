@@ -4,5 +4,5 @@ openvpn_dependency_packages:
   - openvpn
   - iptables-persistent
 openvpn_p2p_proto: "udp"
-domain_name: "soft-machine.tech" 
+domain_name: "xxx.tech" 
 ...
